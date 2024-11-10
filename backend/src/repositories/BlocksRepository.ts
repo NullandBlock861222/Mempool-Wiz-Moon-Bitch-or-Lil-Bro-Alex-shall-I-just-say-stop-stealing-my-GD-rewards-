@@ -501,7 +501,7 @@ class BlocksRepository {
     }
 
     query += ` ORDER BY height DESC
-      LIMIT 100`;
+      LIMIT 10`;
 
     try {
       const [rows]: any[] = await DB.query(query, params);
