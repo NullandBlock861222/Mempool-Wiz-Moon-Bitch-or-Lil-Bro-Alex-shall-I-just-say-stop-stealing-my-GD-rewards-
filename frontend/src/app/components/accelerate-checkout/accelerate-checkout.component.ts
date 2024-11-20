@@ -202,7 +202,6 @@ export class AccelerateCheckout implements OnInit, OnDestroy {
   }
 
   moveToStep(step: CheckoutStep): void {
-    this.processing = false;
     this._step = step;
     if (this.timeoutTimer) {
       clearTimeout(this.timeoutTimer);
