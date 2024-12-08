@@ -15,7 +15,6 @@ export class AccelerationTimelineComponent implements OnInit, OnChanges {
   @Input() tx: Transaction;
   @Input() accelerationInfo: Acceleration;
   @Input() eta: ETA;
-  @Input() canceled: boolean;
 
   now: number;
   accelerateRatio: number;

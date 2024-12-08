@@ -107,7 +107,6 @@ export class TransactionComponent implements OnInit, AfterViewInit, OnDestroy {
   pool: Pool | null;
   auditStatus: TxAuditStatus | null;
   isAcceleration: boolean = false;
-  accelerationCanceled: boolean = false;
   filters: Filter[] = [];
   showCpfpDetails = false;
   miningStats: MiningStats;
@@ -361,17 +360,16 @@ export class TransactionComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe((accelerationHistory) => {
       for (const acceleration of accelerationHistory) {
         if (acceleration.txid === this.txId) {
-          if ((acceleration.status === 'completed' || acceleration.status === 'completed_provisional') && acceleration.pools.includes(acceleration.minedByPoolUniqueId)) {
-            const boostCost = acceleration.boostCost || acceleration.bidBoost;
-            acceleration.acceleratedFeeRate = Math.max(acceleration.effectiveFee, acceleration.effectiveFee + boostCost) / acceleration.effectiveVsize;
-            acceleration.boost = boostCost;
-            this.tx.acceleratedAt = acceleration.added;
-            this.accelerationInfo = acceleration;  
-          }
-          if (acceleration.status === 'failed' || acceleration.status === 'failed_provisional') {
-            this.accelerationCanceled = true;
-            this.tx.acceleratedAt = acceleration.added;
-            this.accelerationInfo = acceleration;
+          if (acceleration.status === 'completed' || acceleration.status === 'completed_provisional') {
+            if (acceleration.pools.includes(acceleration.minedByPoolUniqueId)) {
+              const boostCost = acceleration.boostCost || acceleration.bidBoost;
+              acceleration.acceleratedFeeRate = Math.max(acceleration.effectiveFee, acceleration.effectiveFee + boostCost) / acceleration.effectiveVsize;
+              acceleration.boost = boostCost;
+              this.tx.acceleratedAt = acceleration.added;
+              this.accelerationInfo = acceleration;  
+            } else {
+              this.tx.feeDelta = undefined;
+            }
           }
           this.waitingForAccelerationInfo = false;
           this.setIsAccelerated();
@@ -880,13 +878,9 @@ export class TransactionComponent implements OnInit, AfterViewInit, OnDestroy {
       this.tx.acceleratedBy = cpfpInfo.acceleratedBy;
       this.tx.acceleratedAt = cpfpInfo.acceleratedAt;
       this.tx.feeDelta = cpfpInfo.feeDelta;
-      this.accelerationCanceled = false;
       this.setIsAccelerated(firstCpfp);
-    } else if (cpfpInfo.acceleratedAt) { // Acceleration was cancelled: reset acceleration state
-      this.tx.acceleratedBy = cpfpInfo.acceleratedBy;
-      this.tx.acceleratedAt = cpfpInfo.acceleratedAt;
-      this.tx.feeDelta = cpfpInfo.feeDelta;
-      this.accelerationCanceled = true;
+    } else if (this.tx.acceleration) { // Acceleration was cancelled while on the tx page, reset acceleration state
+      this.tx.acceleration = false;
       this.setIsAccelerated(firstCpfp);
     }
     
@@ -910,12 +904,7 @@ export class TransactionComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setIsAccelerated(initialState: boolean = false) {
-    this.isAcceleration = 
-      (
-        (this.tx.acceleration && (!this.tx.status.confirmed || this.waitingForAccelerationInfo)) || 
-        (this.accelerationInfo && this.pool && this.accelerationInfo.pools.some(pool => (pool === this.pool.id)))
-      ) && 
-      !this.accelerationCanceled;
+    this.isAcceleration = ((this.tx.acceleration && (!this.tx.status.confirmed || this.waitingForAccelerationInfo)) || (this.accelerationInfo && this.pool && this.accelerationInfo.pools.some(pool => (pool === this.pool.id))));
     if (this.isAcceleration) {
       if (initialState) {
         this.accelerationFlowCompleted = true;

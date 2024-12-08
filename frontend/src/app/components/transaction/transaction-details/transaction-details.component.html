@@ -247,7 +247,7 @@
 
 <ng-template #effectiveRateRow>
   @if (!isLoadingTx) {
-    @if ((cpfpInfo && hasEffectiveFeeRate) || (accelerationInfo && isAcceleration)) {
+    @if ((cpfpInfo && hasEffectiveFeeRate) || accelerationInfo) {
       <tr>
         @if (isAcceleration) {
           <td i18n="transaction.accelerated-fee-rate|Accelerated transaction fee rate">Accelerated fee rate</td>
