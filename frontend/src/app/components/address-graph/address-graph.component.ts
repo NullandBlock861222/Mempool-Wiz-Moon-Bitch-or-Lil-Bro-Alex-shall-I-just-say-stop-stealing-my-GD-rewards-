@@ -45,17 +45,14 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
   @Input() left: number | string = 70;
   @Input() widget: boolean = false;
   @Input() defaultFiat: boolean = false;
-  @Input() showLegend: boolean = true;
-  @Input() showYAxis: boolean = true;
 
-  adjustedLeft: number;
-  adjustedRight: number;
   data: any[] = [];
   fiatData: any[] = [];
   hoverData: any[] = [];
   conversions: any;
   allowZoom: boolean = false;
-
+  initialRight = this.right;
+  initialLeft = this.left;
   selected = { [$localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`]: true, 'Fiat': false };
 
   subscription: Subscription;
@@ -184,8 +181,8 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
     const maxValue = this.data.reduce((acc, d) => Math.max(acc, Math.abs(d[1] ?? d.value[1])), 0);
     const minValue = this.data.reduce((acc, d) => Math.min(acc, Math.abs(d[1] ?? d.value[1])), maxValue);
 
-    this.adjustedRight = this.selected['Fiat'] ? +this.right + 40 : +this.right;
-    this.adjustedLeft = this.selected[$localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`] ? +this.left : +this.left - 40;
+    this.right = this.selected['Fiat'] ? +this.initialRight + 40 : this.initialRight;
+    this.left = this.selected[$localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`] ? this.initialLeft : +this.initialLeft - 40;
 
     this.chartOptions = {
       color: [
@@ -202,10 +199,10 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
       grid: {
         top: 20,
         bottom: this.allowZoom ? 65 : 20,
-        right: this.adjustedRight,
-        left: this.adjustedLeft,
+        right: this.right,
+        left: this.left,
       },
-      legend: (this.showLegend && !this.stateService.isAnyTestnet()) ? {
+      legend: !this.stateService.isAnyTestnet() ? {
         data: [
           {
             name: $localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`,
@@ -316,7 +313,6 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
           type: 'value',
           position: 'left',
           axisLabel: {
-            show: this.showYAxis,
             color: 'rgb(110, 112, 121)',
             formatter: (val): string => {
               let valSpan = maxValue - (this.period === 'all' ? 0 : minValue);
@@ -347,7 +343,6 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
         {
           type: 'value',
           axisLabel: {
-            show: this.showYAxis,
             color: 'rgb(110, 112, 121)',
             formatter: function(val) {
               return `$${this.amountShortenerPipe.transform(val, 0, undefined, true)}`;
@@ -404,8 +399,8 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
         type: 'slider',
         brushSelect: false,
         realtime: true,
-        left: this.adjustedLeft,
-        right: this.adjustedRight,
+        left: this.left,
+        right: this.right,
         selectedDataBackground: {
           lineStyle: {
             color: '#fff',
@@ -435,23 +430,23 @@ export class AddressGraphComponent implements OnChanges, OnDestroy {
 
   onLegendSelectChanged(e) {
     this.selected = e.selected;
-    this.adjustedRight = this.selected['Fiat'] ? +this.right + 40 : +this.right;
-    this.adjustedLeft = this.selected[$localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`] ? +this.left : +this.left - 40;
+    this.right = this.selected['Fiat'] ? +this.initialRight + 40 : this.initialRight;
+    this.left = this.selected[$localize`:@@7e69426bd97a606d8ae6026762858e6e7c86a1fd:Balance`] ? this.initialLeft : +this.initialLeft - 40;
 
     this.chartOptions = {
       grid: {
-        right: this.adjustedRight,
-        left: this.adjustedLeft,
+        right: this.right,
+        left: this.left,
       },
       legend: {
         selected: this.selected,
       },
       dataZoom: this.allowZoom ? [{
-        left: this.adjustedLeft,
-        right: this.adjustedRight,
+        left: this.left,
+        right: this.right,
       }, {
-        left: this.adjustedLeft,
-        right: this.adjustedRight,
+        left: this.left,
+        right: this.right,
       }] : undefined
     };
 

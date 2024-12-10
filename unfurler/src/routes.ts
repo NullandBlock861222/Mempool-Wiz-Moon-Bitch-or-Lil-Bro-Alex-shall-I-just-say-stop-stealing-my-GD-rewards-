@@ -85,13 +85,6 @@ const routes = {
       return `Address: ${path[0]}`;
     }
   },
-  wallet: {
-    render: true,
-    params: 1,
-    getTitle(path) {
-      return `Wallet: ${path[0]}`;
-    }
-  },
   blocks: {
     title: "Blocks",
     fallbackImg: '/resources/previews/blocks.jpg',
@@ -296,7 +289,6 @@ export const networks = {
     routes: { // only dynamic routes supported
       block: routes.block,
       address: routes.address,
-      wallet: routes.wallet,
       tx: routes.tx,
       mining: {
         title: "Mining",
@@ -317,7 +309,6 @@ export const networks = {
     routes: { // only dynamic routes supported
       block: routes.block,
       address: routes.address,
-      wallet: routes.wallet,
       tx: routes.tx,
       mining: {
         title: "Mining",
